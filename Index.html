@@ -1,0 +1,473 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>초등 과학 수업자료 제작 도우미</title>
+<style>
+* { box-sizing:border-box; }
+body {
+  margin:0; background:#f3f6f5;
+  font-family:"Malgun Gothic",sans-serif;
+  color:#26352e;
+}
+header {
+  background:#176747; color:white;
+  padding:25px 6%; 
+}
+header h1 { margin:0 0 8px; font-size:25px; }
+header p { margin:0; font-size:14px; opacity:.9; }
+main { max-width:1100px; margin:25px auto; padding:0 18px; }
+.panel {
+  background:white; padding:24px;
+  border-radius:14px; margin-bottom:20px;
+  box-shadow:0 3px 12px #0000000c;
+}
+h2 { font-size:19px; margin-top:0; color:#176747; }
+.grid {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:15px;
+}
+.field { display:flex; flex-direction:column; gap:7px; }
+label { font-size:14px; font-weight:bold; }
+input,textarea,select {
+  padding:11px; border:1px solid #d5ded9;
+  border-radius:7px; font-size:14px;
+  font-family:inherit; width:100%;
+}
+textarea { min-height:75px; resize:vertical; }
+.full { grid-column:1/-1; }
+button {
+  border:0; padding:12px 17px; border-radius:8px;
+  cursor:pointer; font-size:14px; font-weight:bold;
+}
+.primary { background:#176747; color:white; }
+.secondary { background:#e7f1eb; color:#176747; }
+.actions { display:flex; flex-wrap:wrap; gap:9px; margin-top:18px; }
+.tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:15px; }
+.tab { background:#e8efeb; color:#315b47; }
+.tab.active { background:#176747; color:white; }
+.result {
+  white-space:pre-wrap; line-height:1.8;
+  padding:20px; border:1px solid #e0e7e2;
+  border-radius:9px; min-height:300px;
+  font-size:14px; background:#fff;
+}
+.hint { color:#718078; font-size:12px; line-height:1.6; }
+footer { text-align:center; color:#849189; padding:25px; }
+@media(max-width:650px) {
+  .grid { grid-template-columns:1fr; }
+  .full { grid-column:auto; }
+}
+@media print {
+  header,.input-panel,.tabs,.actions,footer { display:none; }
+  main { margin:0; }
+  .panel { box-shadow:none; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🔬 초등 과학 수업자료 제작 도우미</h1>
+  <p>초등학교 4학년 과학 · 수업계획안 · 활동지 · 평가문항 · 교수용 PPT</p>
+</header>
+
+<main>
+
+<section class="panel input-panel">
+  <h2>① 수업 기본 정보 입력</h2>
+
+  <div class="grid">
+    <div class="field">
+      <label>학년</label>
+      <input value="4학년" readonly>
+    </div>
+
+    <div class="field">
+      <label>교과</label>
+      <input value="과학" readonly>
+    </div>
+
+    <div class="field">
+      <label>단원명 *</label>
+      <input id="unit" placeholder="예: 생물과 환경">
+    </div>
+
+    <div class="field">
+      <label>차시 *</label>
+      <input id="lesson" placeholder="예: 2/10차시">
+    </div>
+
+    <div class="field full">
+      <label>학습 주제 *</label>
+      <input id="topic" placeholder="예: 생태계의 구성 요소 알아보기">
+    </div>
+
+    <div class="field full">
+      <label>학습 목표</label>
+      <textarea id="goal" placeholder="예: 생태계를 이루는 생물 요소와 비생물 요소를 구분할 수 있다."></textarea>
+    </div>
+
+    <div class="field full">
+      <label>준비물</label>
+      <input id="materials" placeholder="예: 생태계 사진, 그림 카드, 활동지, 색연필">
+    </div>
+
+    <div class="field full">
+      <label>주요 학습 활동</label>
+      <textarea id="activities" placeholder="예: 생태계 사진 관찰하기, 생물과 비생물 요소 분류하기"></textarea>
+    </div>
+
+    <div class="field">
+      <label>수업 시간(분)</label>
+      <input id="minutes" type="number" value="40" min="1">
+    </div>
+
+    <div class="field">
+      <label>평가 유형</label>
+      <select id="evaluation">
+        <option>관찰 평가 및 지필 평가</option>
+        <option>관찰 평가</option>
+        <option>서술형 평가</option>
+        <option>모둠 활동 평가</option>
+        <option>자기 평가</option>
+      </select>
+    </div>
+  </div>
+
+  <p class="hint">* 필수 항목입니다. 학년은 초등학교 4학년으로 고정되어 있습니다.</p>
+
+  <div class="actions">
+    <button class="primary" onclick="generate()">✨ 네 가지 수업자료 만들기</button>
+    <button class="secondary" onclick="resetForm()">초기화</button>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>② 생성된 수업자료</h2>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab(0)">수업계획안</button>
+    <button class="tab" onclick="showTab(1)">학습활동지</button>
+    <button class="tab" onclick="showTab(2)">평가문항</button>
+    <button class="tab" onclick="showTab(3)">교수용 PPT</button>
+  </div>
+
+  <div id="result" class="result">
+    수업 정보를 입력하고 [네 가지 수업자료 만들기]를 눌러 주세요.
+  </div>
+
+  <div class="actions">
+    <button class="secondary" onclick="copyResult()">내용 복사</button>
+    <button class="secondary" onclick="downloadText()">텍스트 저장</button>
+    <button class="secondary" onclick="downloadAll()">전체 자료 HTML 저장</button>
+    <button class="secondary" onclick="window.print()">인쇄하기</button>
+  </div>
+</section>
+
+</main>
+
+<footer>
+초등학교 4학년 과학 수업자료 제작 도우미
+</footer>
+
+<script>
+let documents = [];
+let currentTab = 0;
+
+function val(id) {
+  return document.getElementById(id).value.trim();
+}
+
+function getData() {
+  return {
+    unit:val("unit"),
+    lesson:val("lesson"),
+    topic:val("topic"),
+    goal:val("goal") || val("topic")+"의 내용을 이해하고 설명할 수 있다.",
+    materials:val("materials") || "교과서, 필기도구, 학습활동지",
+    activities:val("activities") || "관찰하기, 조사하기, 발표하기",
+    minutes:Number(val("minutes")) || 40,
+    evaluation:val("evaluation")
+  };
+}
+
+function generate() {
+  const d=getData();
+
+  if(!d.unit || !d.lesson || !d.topic) {
+    alert("단원명, 차시, 학습 주제를 입력해 주세요.");
+    return;
+  }
+
+  const intro=Math.round(d.minutes*0.15);
+  const develop=Math.round(d.minutes*0.70);
+  const finish=d.minutes-intro-develop;
+
+  documents=[];
+
+  // 1. 수업계획안
+  documents.push(
+`초등학교 4학년 과학 수업계획안
+
+1. 수업 기본 정보
+- 단원: ${d.unit}
+- 차시: ${d.lesson}
+- 학습 주제: ${d.topic}
+- 수업 시간: ${d.minutes}분
+
+2. 학습 목표
+${d.goal}
+
+3. 준비물
+${d.materials}
+
+4. 교수·학습 과정
+
+[도입] (${intro}분)
+- 학습 주제와 관련된 사진이나 자료 제시하기
+- 학생들의 경험과 생각 이야기하기
+- 오늘의 학습 문제 확인하기
+
+[전개] (${develop}분)
+- ${d.activities}
+- 관찰하거나 조사한 결과 기록하기
+- 모둠별 결과 공유하기
+- 학습한 과학 개념 정리하기
+
+[정리] (${finish}분)
+- 오늘 배운 핵심 내용 발표하기
+- 학습 목표 도달 여부 확인하기
+- 생활 속 실천 방법 생각하기
+
+5. 평가 계획
+- 평가 내용: ${d.goal}
+- 평가 방법: ${d.evaluation}
+- 평가 관점: 개념 이해, 탐구 과정, 과학적 태도
+
+6. 안전 지도
+- 실습 도구를 안전하게 사용하도록 지도한다.
+- 생물을 관찰할 때 생명을 소중히 다루도록 한다.
+- 관찰이 끝난 생물은 원래 살던 환경을 고려하여 돌려보낸다.
+`);
+
+  // 2. 학습활동지
+  documents.push(
+`초등학교 4학년 과학 학습활동지
+
+단원: ${d.unit}
+차시: ${d.lesson}
+주제: ${d.topic}
+
+이름: ____________  날짜: ____________
+
+[오늘의 학습 목표]
+${d.goal}
+
+[활동 1. 관찰하고 생각하기]
+오늘 배울 내용과 관련된 자료를 관찰해 보세요.
+
+내가 관찰한 내용:
+________________________________
+
+새롭게 알게 된 점:
+________________________________
+
+[활동 2. 탐구하기]
+${d.activities}
+
+탐구 결과를 정리해 보세요.
+
+________________________________
+________________________________
+________________________________
+
+[활동 3. 생각 넓히기]
+오늘 배운 내용이 우리 생활과 어떤 관계가 있는지 써 보세요.
+
+________________________________
+________________________________
+
+[마무리]
+오늘 가장 기억에 남는 내용은 무엇인가요?
+
+________________________________
+
+오늘의 학습 목표를 얼마나 이루었나요?
+
+□ 잘 이해했어요.
+□ 조금 더 공부하고 싶어요.
+□ 도움이 필요해요.
+`);
+
+  // 3. 평가문항
+  documents.push(
+`초등학교 4학년 과학 평가문항
+
+단원: ${d.unit}
+차시: ${d.lesson}
+주제: ${d.topic}
+
+[선택형 문항] (각 2점)
+
+1. 다음 중 오늘 배운 내용과 관련된 설명으로
+가장 알맞은 것은 무엇인가요?
+
+① 관련 없는 설명
+② 관련 없는 설명
+③ 학습 목표에 맞는 설명
+④ 관련 없는 설명
+
+정답: ③
+
+[서술형 문항] (각 3점)
+
+2. ${d.topic}에 대해 알게 된 내용을
+자신의 말로 설명해 보세요.
+
+예시 답안:
+${d.goal}
+
+3. 오늘 배운 내용을 생활 속에서 활용할 수 있는
+방법을 한 가지 써 보세요.
+
+예시 답안:
+오늘 배운 내용을 주변 환경이나 생활 속에서
+찾아보고 실천한다.
+
+[평가 기준]
+- 핵심 개념을 정확히 이해하는가?
+- 관찰 결과를 자신의 말로 설명하는가?
+- 배운 내용을 생활과 연결하는가?
+
+평가 방법: ${d.evaluation}
+
+※ 선택형 문항의 보기는 단원별 실제 과학 개념에
+맞게 교사가 최종 검토하여 수정해야 합니다.
+`);
+
+  // 4. 교수용 PPT
+  documents.push(
+`초등학교 4학년 과학 교수용 PPT
+
+슬라이드 1. 표지
+${d.unit}
+${d.topic}
+
+초등학교 4학년 과학
+
+슬라이드 2. 생각 열기
+- 오늘 배울 내용과 관련된 사진 살펴보기
+- 무엇을 알고 있나요?
+- 어떤 점이 궁금한가요?
+
+슬라이드 3. 오늘의 학습 목표
+${d.goal}
+
+슬라이드 4. 핵심 개념 알아보기
+- 오늘 배울 과학 개념 살펴보기
+- 중요한 낱말과 뜻 알아보기
+- 그림과 사진으로 이해하기
+
+슬라이드 5. 탐구 활동
+${d.activities}
+
+슬라이드 6. 관찰 결과 정리하기
+- 무엇을 관찰했나요?
+- 어떤 특징을 발견했나요?
+- 새롭게 알게 된 점은 무엇인가요?
+
+슬라이드 7. 함께 이야기하기
+- 모둠별 탐구 결과 발표하기
+- 서로의 생각 비교하기
+- 궁금한 점 질문하기
+
+슬라이드 8. 생활 속 과학
+- 오늘 배운 내용은 우리 생활과 어떤 관계가 있을까요?
+- 주변에서 비슷한 사례를 찾아봅시다.
+
+슬라이드 9. 배움 확인하기
+- 오늘 배운 핵심 개념 확인하기
+- OX 퀴즈 또는 선택형 퀴즈 풀기
+
+슬라이드 10. 마무리
+- 오늘 새롭게 알게 된 점
+- 더 알아보고 싶은 점
+- 다음 시간에 배울 내용 생각하기
+
+교사용 준비물: ${d.materials}
+
+※ 각 슬라이드에 단원에 맞는 사진, 그림,
+탐구 자료를 추가하여 활용하세요.
+`);
+
+  showTab(0);
+  alert("네 가지 수업자료가 생성되었습니다.");
+}
+
+function showTab(index) {
+  currentTab=index;
+  document.querySelectorAll(".tab").forEach((b,i)=>{
+    b.classList.toggle("active",i===index);
+  });
+  document.getElementById("result").textContent=
+    documents[index] || "먼저 수업자료를 생성해 주세요.";
+}
+
+async function copyResult() {
+  if(!documents.length) return alert("먼저 자료를 생성해 주세요.");
+  await navigator.clipboard.writeText(documents[currentTab]);
+  alert("내용을 복사했습니다.");
+}
+
+function downloadText() {
+  if(!documents.length) return alert("먼저 자료를 생성해 주세요.");
+  const blob=new Blob([documents[currentTab]],{type:"text/plain;charset=utf-8"});
+  saveFile(blob,["수업계획안","학습활동지","평가문항","교수용PPT"][currentTab]+".txt");
+}
+
+function downloadAll() {
+  if(!documents.length) return alert("먼저 자료를 생성해 주세요.");
+
+  const names=["수업계획안","학습활동지","평가문항","교수용PPT"];
+  const content=documents.map((doc,i)=>
+    `<h2>${names[i]}</h2><pre>${escapeHTML(doc)}</pre>`
+  ).join("<hr>");
+
+  const html=`<!DOCTYPE html><html lang="ko"><meta charset="UTF-8">
+  <title>과학 수업자료</title>
+  <style>body{font-family:Malgun Gothic,sans-serif;padding:30px;line-height:1.8}
+  pre{white-space:pre-wrap;font-family:inherit}h2{color:#176747}
+  </style><body>${content}</body></html>`;
+
+  saveFile(new Blob([html],{type:"text/html;charset=utf-8"}),
+    "초등4학년_과학수업자료.html");
+}
+
+function escapeHTML(str) {
+  return str.replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",
+    '"':"&quot;","'":"&#39;"
+  })[c]);
+}
+
+function saveFile(blob,name) {
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url; a.download=name; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function resetForm() {
+  ["unit","lesson","topic","goal","materials","activities"].forEach(id=>{
+    document.getElementById(id).value="";
+  });
+  documents=[];
+  document.getElementById("result").textContent=
+    "수업 정보를 입력하고 자료를 생성해 주세요.";
+}
+</script>
+</body>
+</html>
